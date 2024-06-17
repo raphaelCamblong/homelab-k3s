@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: openvpn-svc
+spec:
+  ipFamilyPolicy: PreferDualStack
+  selector:
+    app: openvpn
+  ports:
+    - protocol: UDP
+      port: 1194
+      targetPort: 1194
+      name: udp-port
+    - protocol: TCP
+      port: 443
+      targetPort: 443
+      name: tcp-443
+    - protocol: TCP
+      port: 943
+      targetPort: 943
+      name: tcp-943
+  type: LoadBalancer
