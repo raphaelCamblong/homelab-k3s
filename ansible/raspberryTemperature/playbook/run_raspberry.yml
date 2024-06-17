@@ -1,0 +1,13 @@
+---
+- hosts: raspberries
+  gather_facts: no
+
+  tasks:
+    - name: Get CPU temperature
+      become: yes
+      command: vcgencmd measure_temp
+      register: temp_output
+
+    - name: Display CPU temperature
+      debug:
+        msg: "CPU temperature is {{ temp_output.stdout }}"
