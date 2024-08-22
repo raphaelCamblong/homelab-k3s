@@ -1,0 +1,19 @@
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  className: standard
+
+ingress:
+  enabled: true
+  hosts:
+    - grafana.galideo.com
+  annotations:
+    spec.ingressClassName: traefik
+  tls:
+    - hosts:
+      - grafana.galideo.com
+      secretName: grafana-tls
+
+service:
+  type: LoadBalancer
