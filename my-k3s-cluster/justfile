@@ -1,0 +1,101 @@
+
+kube_vip_endpoint := "192.168.1.144"
+interface := "enX0"
+node_path := './'
+cluster_name := "k3s_galideo"
+user := "raphael"
+metalLb_ip_range := "192.168.1.145-192.168.1.240"
+
+deploy:
+    just deploy_master_init 192.168.1.29
+    just deploy_master_init_check
+    just deploy_master_init_vip
+
+deploy_next:
+    just deploy_master_join 192.168.1.31
+    just deploy_master_join 192.168.1.36
+    just deploy_agent_join 192.168.1.33
+    just deploy_agent_join 192.168.1.34
+
+deploy_master_init ip:
+    # install k3s
+    sudo k3sup install \
+    --ip={{ip}} \
+    --user=raphael \
+    --ssh-key ~/.ssh/id_ed25519 \
+    --sudo \
+    --cluster \
+    --tls-san={{kube_vip_endpoint}} \
+    --k3s-channel=stable \
+    --k3s-extra-args "--disable=traefik --disable=servicelb --flannel-iface={{interface}} --node-ip={{ip}}" \
+    --local-path $HOME/.kube/config \
+    --merge \
+    --print-command \
+    --context={{cluster_name}}
+    just deploy_master_init_check
+
+deploy_master_init_check:
+    # Seting context
+    kubectx {{cluster_name}}
+    kubectl get no
+    kubectl get po -A -o wide
+
+deploy_master_init_vip:
+    # install kube-vip
+    kubectl apply -f https://kube-vip.io/manifests/rbac.yaml
+    @echo "sudo su -"
+    @echo 'KVVERSION=$(curl -sL https://api.github.com/repos/kube-vip/kube-vip/releases | jq -r ".[0].name")'
+    @echo 'alias kube-vip="ctr image pull ghcr.io/kube-vip/kube-vip:$KVVERSION; ctr run --rm --net-host ghcr.io/kube-vip/kube-vip:$KVVERSION vip /kube-vip"'
+    @echo 'kube-vip manifest daemonset --interface {{interface}} --address {{kube_vip_endpoint}} --inCluster --taint --controlplane --services --arp --leaderElection | sudo tee /var/lib/rancher/k3s/server/manifests/kube-vip.yaml'
+
+deploy_master_join ip:
+    k3sup join \
+    --ip {{ip}} \
+    --user=raphael \
+    --ssh-key ~/.ssh/id_ed25519 \
+    --sudo \
+    --k3s-channel stable \
+    --server \
+    --server-ip {{kube_vip_endpoint}} \
+    --server-user raphael \
+
+deploy_agent_join ip:
+    k3sup join \
+    --ip {{ip}} \
+    --user=raphael \
+    --ssh-key ~/.ssh/id_ed25519 \
+    --sudo \
+    --k3s-channel stable \
+    --server-ip {{kube_vip_endpoint}} \
+    --server-user raphael
+    # --k3s-extra-args "--disable=traefik --disable=servicelb --flannel-iface={{interface}} --node-ip={{ip}}"
+
+deploy_init_local_helm_repo:
+    helm repo update
+
+deploy_metalLB:
+    kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml
+    kubectl apply -f ./metalLb/configMap.yaml
+    kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/metallb.yaml
+
+deploy_monitoring:
+    kubectl create namespace monitoring
+    helm install prometheus prometheus-community/prometheus -n monitoring
+    helm install grafana grafana/grafana -f ./grafana/values.yaml -n monitoring
+
+deploy_test_app:
+    kubectl apply -f ./example/deployment.yml
+    kubectl apply -f ./example/service.yml
+
+delete_test_app:
+    kubectl delete -f ./example/deployment.yml
+    kubectl delete -f ./example/service.yml
+    kubectl get deployments
+    kubectl get svc
+
+get_kubectl_config ip:
+    scp raphael@{{ip}}:/etc/rancher/k3s/k3s.yaml ./
+
+uninstall:
+    sudo /usr/local/bin/k3s-uninstall.sh
+
