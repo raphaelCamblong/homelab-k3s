@@ -1,21 +1,27 @@
 
 kube_vip_endpoint := "192.168.1.144"
 interface := "enX0"
-node_path := './'
 cluster_name := "k3s_galideo"
 user := "raphael"
-metalLb_ip_range := "192.168.1.145-192.168.1.240"
 
+master_0_ip:= "192.168.1.37"
+master_1_ip:= "192.168.1.38"
+master_2_ip:= "192.168.1.39"
+
+worker_0_ip:= "192.168.1.40"
+worker_1_ip:= "192.168.1.41"
+
+# DEPLOYMENT PART
 deploy:
-    just deploy_master_init 192.168.1.29
+    just deploy_master_init {{master_0_ip}}
     just deploy_master_init_check
     just deploy_master_init_vip
 
 deploy_next:
-    just deploy_master_join 192.168.1.31
-    just deploy_master_join 192.168.1.36
-    just deploy_agent_join 192.168.1.33
-    just deploy_agent_join 192.168.1.34
+    just deploy_master_join {{master_1_ip}}
+    just deploy_master_join {{master_2_ip}}
+    just deploy_agent_join {{worker_0_ip}}
+    just deploy_agent_join {{worker_1_ip}}
 
 deploy_master_init ip:
     # install k3s
@@ -43,10 +49,8 @@ deploy_master_init_check:
 deploy_master_init_vip:
     # install kube-vip
     kubectl apply -f https://kube-vip.io/manifests/rbac.yaml
-    @echo "sudo su -"
-    @echo 'KVVERSION=$(curl -sL https://api.github.com/repos/kube-vip/kube-vip/releases | jq -r ".[0].name")'
-    @echo 'alias kube-vip="ctr image pull ghcr.io/kube-vip/kube-vip:$KVVERSION; ctr run --rm --net-host ghcr.io/kube-vip/kube-vip:$KVVERSION vip /kube-vip"'
-    @echo 'kube-vip manifest daemonset --interface {{interface}} --address {{kube_vip_endpoint}} --inCluster --taint --controlplane --services --arp --leaderElection | sudo tee /var/lib/rancher/k3s/server/manifests/kube-vip.yaml'
+    scp ./utils/install_kubeVIP.sh {{user}}@{{master_0_ip}}/
+    ssh {{user}}@{{master_0_ip}}/ /path/to/directory/install_kube-vip.sh
 
 deploy_master_join ip:
     k3sup join \
@@ -57,7 +61,7 @@ deploy_master_join ip:
     --k3s-channel stable \
     --server \
     --server-ip {{kube_vip_endpoint}} \
-    --server-user raphael \
+    --server-user raphael
 
 deploy_agent_join ip:
     k3sup join \
@@ -68,10 +72,13 @@ deploy_agent_join ip:
     --k3s-channel stable \
     --server-ip {{kube_vip_endpoint}} \
     --server-user raphael
-    # --k3s-extra-args "--disable=traefik --disable=servicelb --flannel-iface={{interface}} --node-ip={{ip}}"
 
-deploy_init_local_helm_repo:
-    helm repo update
+# POPULATE PART
+install_all_helm_chart:
+  helm repo add longhorn https://charts.longhorn.io
+  helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  helm repo add grafana https://grafana.github.io/helm-charts
+  helm repo update
 
 deploy_metalLB:
     kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml
@@ -80,9 +87,13 @@ deploy_metalLB:
 
 deploy_monitoring:
     kubectl create namespace monitoring
-    helm install prometheus prometheus-community/prometheus -n monitoring
+    helm install prometheus prometheus-community/prometheus -n monitoring --create-namespace
     helm install grafana grafana/grafana -f ./grafana/values.yaml -n monitoring
 
+deploy_longhorn:
+  helm install longhorn longhorn/longhorn --namespace longhorn-system -f ./longhorn/values.yml --create-namespace
+
+# Test App
 deploy_test_app:
     kubectl apply -f ./example/deployment.yml
     kubectl apply -f ./example/service.yml
@@ -93,9 +104,14 @@ delete_test_app:
     kubectl get deployments
     kubectl get svc
 
+# Utils
 get_kubectl_config ip:
-    scp raphael@{{ip}}:/etc/rancher/k3s/k3s.yaml ./
+    scp {{user}}@{{ip}}:/etc/rancher/k3s/k3s.yaml ./
 
 uninstall:
     sudo /usr/local/bin/k3s-uninstall.sh
+
+# BACKUP PART
+backup_etcd:
+    ssh {{user}}@{{master_0_ip}} sudo k3s etcd-snapshot save
 
