@@ -1,0 +1,5 @@
+- name: Apply saved etcd backup
+  hosts: server
+  become: yes
+  roles:
+      role: etcd_restore.yaml

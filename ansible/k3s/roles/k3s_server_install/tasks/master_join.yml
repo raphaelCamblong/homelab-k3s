@@ -1,0 +1,14 @@
+---
+- name: "Install k3s using k3sup joining master"
+  become: true
+  command: "sudo k3sup join \
+    --ip {{curren_host_ip}} \
+    --user=raphael \
+    --ssh-key {{ ssh_key_path }} \
+    --sudo \
+    --k3s-channel stable \
+    --server-ip {{ kube_vip_endpoint }} \
+    --server-user {{ user }}"
+  register: script_output
+  delegate_to: localhost
+  run_once: true

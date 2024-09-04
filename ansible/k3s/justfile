@@ -1,0 +1,13 @@
+inventory_path := "./inventory/inventory.ini"
+
+ping:
+  ansible all -m ping -i inventory.ini
+
+etcd_backup:
+  ansible-playbook -i {{inventory_path}} ./playbooks/etcd_backup.yml
+
+etcd_restore:
+  ansible-playbook -i {{inventory_path}} ./playbooks/etcd_restore.yml
+
+k3s_install:
+  ansible-playbook -i {{inventory_path}} ./playbooks/k3s_install.yml --ask-become-pass

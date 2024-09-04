@@ -1,0 +1,6 @@
+---
+kube_vip_endpoint : "192.168.1.144"
+interface: "enX0"
+ssh_key_path: "~/.ssh/id_ed25519"
+cluster_name : "k3s_galideo"
+user : "raphael"

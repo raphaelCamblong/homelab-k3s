@@ -1,0 +1,7 @@
+- name: Execute tasks on the first server node
+  include_tasks: master_create.yml
+  when: inventory_hostname == play_hosts[0]
+
+#- name: Execute tasks on subsequent server nodes
+#  include_tasks: master_join.yml
+#  when: inventory_hostname in server

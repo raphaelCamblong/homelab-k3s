@@ -1,0 +1,12 @@
+- name: Install k3s server
+  gather_facts: yes
+  vars_files: ../inventory/all.yml
+  hosts: server
+  roles:
+      - role: ../roles/k3s_server_install
+
+- name: Install k3s agent
+  vars_files: ../inventory/all.yml
+  hosts: agent
+  roles:
+    - role: ../roles/k3s_agent_install
