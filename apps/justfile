@@ -1,0 +1,12 @@
+#!/usr/bin/env just --justfile
+
+install_all_helm_chart:
+  helm repo add bitnami https://charts.bitnami.com/bitnami
+  helm repo add argo https://argoproj.github.io/argo-helm
+  helm repo update
+
+deploy_redis:
+  helm install home-lab-redis bitnami/redis -f ./redis/values.yaml -n home-lab --create-namespace
+
+deploy_argo:
+  helm install argo-cd argo/argo-cd -f ./argo/values.yml -n argo-cd --create-namespace
