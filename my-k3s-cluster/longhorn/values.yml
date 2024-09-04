@@ -1,0 +1,7 @@
+service:
+  ui:
+    type: LoadBalancer
+
+#metrics:
+#  serviceMonitor:
+#    enabled: true
