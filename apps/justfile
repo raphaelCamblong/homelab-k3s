@@ -6,12 +6,12 @@ install_all_helm_chart:
   helm repo add grafana https://grafana.github.io/helm-charts
   helm repo add bitnami https://charts.bitnami.com/bitnami
   helm repo add argo https://argoproj.github.io/argo-helm
+  helm repo add mojo2600 https://mojo2600.github.io/pihole-kubernetes/
   helm repo update
 
 deploy_metalLB:
-    kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml
+    kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
     kubectl apply -f ./metalLb/configMap.yaml
-    kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/metallb.yaml
 
 deploy_longhorn:
   helm install longhorn longhorn/longhorn --namespace longhorn-system -f ./longhorn/values.yml --create-namespace
@@ -26,6 +26,11 @@ deploy_redis:
 deploy_argo:
   helm install argo-cd argo/argo-cd -f ./argo/values.yml -n argo-cd --create-namespace
 
+deploy_piHole:
+  helm install pihole mojo2600/pihole -f ./pihole/values.yml -n system-dns --create-namespace
+
+deploy_externalDNS:
+  helm install external-dns bitnami/external-dns -f ./externalDNS/values.yml -n system-dns --create-namespace
 
 # Test App
 deploy_test_app:
