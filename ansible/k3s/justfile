@@ -1,13 +1,32 @@
 inventory_path := "./inventory/inventory.ini"
 
+ansible_args := '-vvv'
+
+#INSTALL command
+k3s_install:
+  ansible-playbook -i {{inventory_path}} ./playbooks/k3s_install.yml --ask-become-pass
+
+# TOOLS COMMANDS
 ping:
   ansible all -m ping -i inventory.ini
 
+k3s_setup:
+  ansible-playbook -i {{inventory_path}} ./playbooks/setup_cluster.yml
+
+k3s_uninstall:
+  ansible-playbook -i {{inventory_path}} ./playbooks/k3s_uninstall.yml
+
+clear_config:
+  rm -rf ./playbooks/kubeconfig
+  rm -rf ./exported_k3s_config
+
+# etcd databse management
 etcd_backup:
   ansible-playbook -i {{inventory_path}} ./playbooks/etcd_backup.yml
 
 etcd_restore:
-  ansible-playbook -i {{inventory_path}} ./playbooks/etcd_restore.yml
+  ansible-playbook -i {{inventory_path}} ./playbooks/etcd_restore.yml {{ ansible_args }}
 
-k3s_install:
-  ansible-playbook -i {{inventory_path}} ./playbooks/k3s_install.yml --ask-become-pass
+# apps
+k3s_install_apps:
+  ansible-playbook -i {{inventory_path}} ./playbooks/install_apps.yml {{ ansible_args }}a

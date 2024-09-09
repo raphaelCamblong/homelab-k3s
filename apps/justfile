@@ -1,12 +1,39 @@
 #!/usr/bin/env just --justfile
 
 install_all_helm_chart:
+  helm repo add longhorn https://charts.longhorn.io
+  helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  helm repo add grafana https://grafana.github.io/helm-charts
   helm repo add bitnami https://charts.bitnami.com/bitnami
   helm repo add argo https://argoproj.github.io/argo-helm
   helm repo update
+
+deploy_metalLB:
+    kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml
+    kubectl apply -f ./metalLb/configMap.yaml
+    kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/metallb.yaml
+
+deploy_longhorn:
+  helm install longhorn longhorn/longhorn --namespace longhorn-system -f ./longhorn/values.yml --create-namespace
+
+deploy_monitoring:
+    helm install prometheus prometheus-community/prometheus -n monitoring --create-namespace
+    helm install grafana grafana/grafana -f ./grafana/values.yaml -n monitoring
 
 deploy_redis:
   helm install home-lab-redis bitnami/redis -f ./redis/values.yaml -n home-lab --create-namespace
 
 deploy_argo:
   helm install argo-cd argo/argo-cd -f ./argo/values.yml -n argo-cd --create-namespace
+
+
+# Test App
+deploy_test_app:
+    kubectl apply -f ../example/deployment.yml
+    kubectl apply -f ../example/service.yml
+
+delete_test_app:
+    kubectl delete -f ../example/deployment.yml
+    kubectl delete -f ../example/service.yml
+    kubectl get deployments
+    kubectl get svc

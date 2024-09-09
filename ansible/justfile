@@ -1,0 +1,64 @@
+# VARIABLE
+kube_vip_endpoint := "192.168.1.144"
+interface := "enX0"
+cluster_name := "k3s_galideo"
+user := "raphael"
+
+# DEPLOYMENT PART
+deploy_server_create ip:
+    sudo k3sup install \
+    --ip={{ip}} \
+    --user=raphael \
+    --ssh-key ~/.ssh/id_ed25519 \
+    --sudo \
+    --cluster \
+    --tls-san={{kube_vip_endpoint}} \
+    --k3s-channel=stable \
+    --k3s-extra-args "--disable=traefik --disable=servicelb --flannel-iface={{interface}} --node-ip={{ip}}" \
+    --local-path $HOME/.kube/config \
+    --merge \
+    --print-command \
+    --context={{cluster_name}}
+
+deploy_master_init_check:
+    kubectx {{cluster_name}}
+    kubectl get no
+    kubectl get po -A -o wide
+
+deploy_master_init_vip ip:
+    kubectl apply -f https://kube-vip.io/manifests/rbac.yaml
+    scp ./utils/install_kubeVIP.sh {{user}}@{{ip}}/
+    ssh {{user}}@{{ip}}/ /path/to/directory/install_kube-vip.sh
+
+deploy_master_join ip:
+    k3sup join \
+    --ip {{ip}} \
+    --user=raphael \
+    --ssh-key ~/.ssh/id_ed25519 \
+    --sudo \
+    --k3s-channel stable \
+    --server \
+    --server-ip {{kube_vip_endpoint}} \
+    --server-user raphael
+
+deploy_agent_join ip:
+    k3sup join \
+    --ip {{ip}} \
+    --user=raphael \
+    --ssh-key ~/.ssh/id_ed25519 \
+    --sudo \
+    --k3s-channel stable \
+    --server-ip {{kube_vip_endpoint}} \
+    --server-user raphael
+
+# Utils
+get_kubectl_config ip:
+    scp {{user}}@{{ip}}:/etc/rancher/k3s/k3s.yaml ./
+
+uninstall:
+    sudo /usr/local/bin/k3s-uninstall.sh
+
+# BACKUP PART
+backup_etcd ip:
+    ssh {{user}}@{{ip}} sudo k3s etcd-snapshot save
+

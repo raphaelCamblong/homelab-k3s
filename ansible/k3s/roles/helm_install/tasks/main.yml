@@ -1,0 +1,55 @@
+---
+- name: Deploy Prometheus
+  kubernetes.core.helm:
+    name: prometheus
+    namespace: monitoring
+    create_namespace: true
+    chart_ref: stable/prometheus
+    chart_version: latest
+    values_files: "{{ role_path }}/files/prometheus.yml"
+  delegate_to: localhost
+  run_once: true
+
+- name: Deploy Grafana
+  kubernetes.core.helm:
+    name: grafana
+    namespace: monitoring
+    create_namespace: true
+    chart_ref: stable/grafana
+    chart_version: latest
+    values: "{{ role_path }}/files/grafana.yml"
+  delegate_to: localhost
+  run_once: true
+
+- name: Deploy ArgoCD
+  kubernetes.core.helm:
+    name: argocd
+    namespace: argocd
+    create_namespace: true
+    chart_ref: argo/argo-cd
+    chart_version: latest
+    values: "{{ role_path }}/files/argocd.yml"
+  delegate_to: localhost
+  run_once: true
+
+- name: Deploy externalDNS
+  kubernetes.core.helm:
+    name: externaldns
+    namespace: external-dns
+    create_namespace: true
+    chart_ref: bitnami/external-dns
+    chart_version: latest
+    values: "{{ role_path }}/files/externaldns.yml"
+  delegate_to: localhost
+  run_once: true
+
+- name: Deploy Pi-hole
+  kubernetes.core.helm:
+    name: pihole
+    namespace: pihole
+    create_namespace: true
+    chart_ref: stable/pihole
+    chart_version: latest
+    values: "{{ role_path }}/files/pihole.yml"
+  delegate_to: localhost
+  run_once: true

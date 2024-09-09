@@ -1,11 +1,8 @@
 ---
-- name: Select a single server node to run the command
-  with_items: "{{ groups['server'][0] }}"
-  shell: sudo k3s etcd-snapshot save
-  register: snapshot_result
+- name: Execute tasks on the head server node
+  include_tasks: head_backup.yaml
+  when: inventory_hostname == play_hosts[0]
 
-- name: Display the result of the snapshot command
-  debug:
-    var: snapshot_result.stdout
-
-#- name: Save to AWS s3 bucket
+- name: Execute tasks on subsequent server nodes
+  include_tasks: rest_backup.yml
+  when: inventory_hostname in server and inventory_hostname != play_hosts[0]

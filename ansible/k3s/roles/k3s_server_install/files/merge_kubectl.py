@@ -1,33 +1,41 @@
 #!/usr/bin/env python3
 import yaml
-import subprocess
 import os
+import pwd
 
 imported_config = '../exported_k3s_config'
 kube_config_path = "/Users/raphael/.kube/config"
 
 def modify_kube_config(ip, namespace):
-    # Load the kubeconfig file
-    with open(imported_config, 'r') as f:
-        config = yaml.safe_load(f)
+  # Load the kubeconfig file
+  with open(imported_config, 'r') as f:
+      config = yaml.safe_load(f)
 
-    # Modify the server URL
-    config['clusters'][0]['cluster']['server'] = f"https://{ip}:6443"
+  # Modify the server URL
+  config['clusters'][0]['cluster']['server'] = f"https://{ip}:6443"
 
-    # Modify the context name
-    config['clusters'][0]['cluster']['name'] = namespace
-    config['clusters'][0]['name'] = namespace
+  # Modify the context name
+  config['clusters'][0]['cluster']['name'] = namespace
+  config['clusters'][0]['name'] = namespace
 
-    config['contexts'][0]['context']['cluster'] = namespace
-    config['contexts'][0]['context']['user'] = namespace
-    config['contexts'][0]['name'] = namespace
-    config['current-context'] = namespace
+  config['contexts'][0]['context']['cluster'] = namespace
+  config['contexts'][0]['context']['user'] = namespace
+  config['contexts'][0]['name'] = namespace
+  config['current-context'] = namespace
 
-    config['users'][0]['name'] = namespace
+  config['users'][0]['name'] = namespace
 
-    # Write the modified config back to the file
-    with open(kube_config_path, 'w') as f:
-        yaml.dump(config, f)
+  # Write the modified config back to the file
+  with open(kube_config_path, 'w') as f:
+    yaml.dump(config, f)
+  change_ownership(kube_config_path)
+
+def change_ownership(file_path):
+    uid = os.getuid()
+    gid = os.getgid()
+
+    os.chown(file_path, uid, gid)
+
 
 if __name__ == "__main__":
     import sys

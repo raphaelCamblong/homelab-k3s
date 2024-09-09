@@ -1,3 +1,6 @@
+- name: Setup nodes
+  ansible.builtin.import_playbook: ./setup_cluster.yml
+
 - name: Install k3s server
   gather_facts: yes
   vars_files: ../inventory/all.yml
@@ -10,3 +13,15 @@
   hosts: agent
   roles:
     - role: ../roles/k3s_agent_install
+
+# DEPRECATED see the ../apps folder instead of this crap
+#- name: Install Mandatory apps
+#  hosts: server
+#  roles:
+#    - role: ../roles/kube_app_mandatory_install
+
+# DEPRECATED see the ../apps folder instead of this crap
+#- name: Install helm usefull apps
+#  hosts: server
+#  roles:
+#    - role: ../roles/helm_install
