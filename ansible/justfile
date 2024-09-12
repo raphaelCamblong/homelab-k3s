@@ -62,3 +62,8 @@ uninstall:
 backup_etcd ip:
     ssh {{user}}@{{ip}} sudo k3s etcd-snapshot save
 
+token := K1091b89316504a00be1f1183046002b0bde57a98e7a985c0d65e743eb62dade8b7::server:Lu9VHNSAMZhIaujd8hob0V3XqRgI2lm8qap9ad+HY5jH7qKQvLlXyTnk5fL76KNTOHlbCq62weUE0wz+sQuZPw==
+
+agent:
+  curl -fL https://get.k3s.io | sh -s - agent \
+   --token= {{ token }} --server https://192.168.1.144:6443

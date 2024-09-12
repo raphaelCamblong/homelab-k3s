@@ -28,7 +28,7 @@ def modify_kube_config(ip, namespace):
   # Write the modified config back to the file
   with open(kube_config_path, 'w') as f:
     yaml.dump(config, f)
-  change_ownership(kube_config_path)
+#   change_ownership(kube_config_path)
 
 def change_ownership(file_path):
     uid = os.getuid()

@@ -1,5 +1,0 @@
-- name: Save etcd snapshot on one server node
-  hosts: server
-  become: yes
-  roles:
-    - role: etcd_backup.yaml

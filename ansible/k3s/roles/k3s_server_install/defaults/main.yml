@@ -1,2 +1,0 @@
----
-k3s_args: "'--disable=traefik --disable=servicelb --flannel-iface={{interface}} --node-ip={{ head_server_node_ip }}'"

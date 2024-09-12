@@ -1,6 +1,0 @@
----
-- name: Setup k3s nodes
-  hosts: all
-  vars_files: ../inventory/all.yml
-  roles:
-    - role: ../roles/setUp
