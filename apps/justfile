@@ -9,6 +9,14 @@ install_all_helm_chart:
   helm repo add mojo2600 https://mojo2600.github.io/pihole-kubernetes/
   helm repo update
 
+deploy:
+  just deploy_metalLB
+  just deploy_longhorn
+  just deploy_monitoring
+  just deploy_argo
+  just deploy_piHole
+  just deploy_externalDNS
+
 deploy_metalLB:
     kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
     kubectl apply -f ./metalLb/addressPool.yml
@@ -31,14 +39,6 @@ deploy_externalDNS:
 
 deploy_redis:
   helm install home-lab-redis bitnami/redis -f ./redis/values.yaml -n home-lab --create-namespace
-
-deploy:
-  just deploy_metalLB
-  just deploy_longhorn
-  just deploy_monitoring
-  just deploy_argo
-  just deploy_piHole
-  just deploy_externalDNS
 
 # Test App
 deploy_test_app:
