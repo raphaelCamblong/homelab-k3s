@@ -1,4 +1,19 @@
-## Grafana.com dashboard ids:
+# Homelab K3s Configuration
+
+This repository contains configuration files and serverless functions for my personal homelab running on K3s. It serves as a central location for managing deployments, monitoring configurations, and automation scripts.
+
+## Overview
+
+This homelab setup uses K3s, a lightweight Kubernetes distribution, 
+
+- Kubernetes deployments
+- Monitoring dashboards (Grafana)
+- Serverless functions
+- Infrastructure as Code (IaC) configurations
+
+## Monitoring Dashboards
+
+The following Grafana dashboards are configured for monitoring:
 
 | Dashboard                          | ID    |
 |:-----------------------------------|:------|
@@ -9,11 +24,3 @@
 | k8s-views-namespaces.json          | 15758 |
 | k8s-views-nodes.json               | 15759 |
 | k8s-views-pods.json                | 15760 |
-
-
-## GOOD TO KNOW
-- hostnamectl set-hostname "worker-0" *Optional*
-- ssh-copy-id raphael@ip
-- ssh access and sudo no passwd access:
-(sudo visudo)
-append to the end"{{USER}} ALL=(ALL) NOPASSWD:ALL"
