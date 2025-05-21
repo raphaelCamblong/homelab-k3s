@@ -1,0 +1,39 @@
+# openfaas-values.yaml
+functionNamespace: openfaas-fn
+
+gateway:
+  replicas: 1
+  directFunctions: false
+  readTimeout: 65s
+  writeTimeout: 65s
+  upstreamTimeout: 60s
+  scaleFromZero: true
+  maxIdleConns: 1024
+  maxIdleConnsPerHost: 1024
+
+faasnetes:
+  readinessProbe:
+    initialDelaySeconds: 20
+    timeoutSeconds: 10
+    periodSeconds: 20
+  livenessProbe:
+    initialDelaySeconds: 20
+    timeoutSeconds: 2
+    periodSeconds: 2
+
+queueWorker:
+  replicas: 1
+  queueGroup: "faas"
+  ackWait: "60s"
+
+# Set to false if you're using an external auth provider
+basic_auth: false
+
+prometheus:
+  enabled: true
+
+alertmanager:
+  enabled: true
+
+operator:
+  create: false

@@ -1,24 +1,64 @@
-DNS1:
-  192.168.1.1
+replicaCount: 1
 
-persistentVolumeClaim:
-  enabled: true
+DNS1: 192.168.1.1
+DNS2: "1.1.1.1"
+
+# # Disable hostPort since we're using LoadBalancer
+# dnsHostPort:
+#   enabled: false
+serviceDhcp:
+  enabled: false
+
+serviceDns:
+  type: LoadBalancer
+  loadBalancerIP: "192.168.1.181"
+  annotations:
+    metallb.universe.tf/allow-shared-ip: pihole
+  externalTrafficPolicy: Local
+  mixedService: true
+  port: 53
+
+# Web interface configuration
+serviceWeb:
+  http:
+    enable: true
+    port: 80
+    type: LoadBalancer
+  type: ClusterIP
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128M
 
 ingress:
   enabled: true
+  annotations: {}
+  path: /
+  pathType: ImplementationSpecific
   hosts:
-    - "pihole.home"
+    - pihole.home
+  tls: []
 
-serviceWeb:
-  loadBalancerIP: 192.168.1.220
-  annotations:
-    metallb.universe.tf/allow-shared-ip: pihole-svc
-  type: LoadBalancer
+persistence:
+  enabled: true
+  storageClass: "longhorn"
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
 
-serviceDns:
-  loadBalancerIP: 192.168.1.219
-  annotations:
-    metallb.universe.tf/allow-shared-ip: pihole-svc
-  type: LoadBalancer
+persistentVolumeClaim:
+  enabled: true
+  annotations: {}
+  accessModes:
+    - ReadWriteOnce
+  size: "500Mi"
+  storageClass: "longhorn"
 
-replicaCount: 1
+extraEnvVars:
+  ServerIP: "192.168.1.181"
+  DNSMASQ_LISTENING: "all"
+  TZ: "Europe/Paris"

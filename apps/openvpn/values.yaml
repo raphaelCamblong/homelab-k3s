@@ -1,6 +1,0 @@
-image: "openvpn/openvpn-as"
-
-
-ingress:
-  enabled: true
-  hostname: openvpn.access.com

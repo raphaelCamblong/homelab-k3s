@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: { { include "wg-easy.fullname" . } }
+spec:
+  selector:
+    app: { { include "wg-easy.name" . } }
+  type: { { .Values.service.type } }
+  ports:
+    - name: wireguard-udp
+      port: { { .Values.service.ports.wireguardUDP } }
+      protocol: UDP
+      targetPort: { { .Values.service.ports.wireguardUDP } }
+    - name: web-ui
+      port: { { .Values.service.ports.webUI } }
+      protocol: TCP
+      targetPort: { { .Values.service.ports.webUI } }

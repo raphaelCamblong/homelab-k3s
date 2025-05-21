@@ -1,7 +1,35 @@
+global:
+  cattle:
+    systemDefaultRegistry: ""
+
+  # Node selector for storage nodes
+  nodeSelector:
+    node.longhorn.io/create-default-disk: "true"
+
+  persistence:
+    defaultClassReplicaCount: 1
+
+  # Resource limits
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 100m
+      memory: 512Mi
+
+ingress:
+  enabled: true
+  host: longhorn.home
+  path: /
+
 service:
   ui:
-    type: LoadBalancer
+    type: ClusterIP
 
-#metrics:
-#  serviceMonitor:
-#    enabled: true
+metrics:
+  serviceMonitor:
+    enabled: true
+
+defaultSettings:
+  spdk: true

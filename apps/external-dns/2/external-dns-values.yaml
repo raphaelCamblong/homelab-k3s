@@ -1,0 +1,27 @@
+provider: rfc2136
+rfc2136:
+  host: http://pihole-web.system-dns.svc.cluster.local
+  port: 53
+  tsigSecretAlg: hmac-sha256
+  tsigKeyname: externaldns-key
+  tsigAxfr: true
+
+policy: sync  # Sync DNS records
+registry: txt
+interval: 1m
+txtOwnerId: k3s
+
+# Watch all namespaces
+sources:
+  - ingress
+  - service
+  - ingressroute.traefik.io  # Support for Traefik IngressRoutes
+
+# Annotations filter
+annotationFilter: "external-dns.alpha.kubernetes.io/enabled=true"
+
+# Domain filter
+domainFilters:
+  - local  # Only manage records for .local domain
+  - net
+  - home

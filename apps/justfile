@@ -2,11 +2,14 @@
 
 install_all_helm_chart:
   helm repo add longhorn https://charts.longhorn.io
+  helm repo add traefik https://helm.traefik.io/traefik
   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
   helm repo add grafana https://grafana.github.io/helm-charts
   helm repo add bitnami https://charts.bitnami.com/bitnami
   helm repo add argo https://argoproj.github.io/argo-helm
   helm repo add mojo2600 https://mojo2600.github.io/pihole-kubernetes/
+  helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+  helm repo add openfaas https://openfaas.github.io/faas-netes/
   helm repo update
 
 deploy:
@@ -24,6 +27,10 @@ deploy_metalLB:
 deploy_longhorn:
   helm install longhorn longhorn/longhorn --namespace longhorn-system -f ./longhorn/values.yml --create-namespace
 
+deploy_traefik:
+  helm install traefik traefik/traefik --namespace traefik -f ./traefik/traefik-values.yml --create-namespace
+  kubectl apply -f ./traefik/traefik-middleware.yml
+
 deploy_monitoring:
     helm install prometheus prometheus-community/prometheus -n monitoring --create-namespace
     helm install grafana grafana/grafana -f ./grafana/values.yaml -n monitoring
@@ -31,14 +38,35 @@ deploy_monitoring:
 deploy_argo:
   helm install argo-cd argo/argo-cd -f ./argo/values.yml -n argo-cd --create-namespace
 
+deploy_cicd:
+  kubectl create namespace tekton-pipelines
+  kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+  kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+  kubectl apply -f https://storage.googleapis.com/tekton-releases/dashboard/latest/tekton-dashboard-release.yaml
+  kubectl apply --filename https://storage.googleapis.com/tekton-releases/dashboard/latest/release.yaml
+
 deploy_piHole:
   helm install pihole mojo2600/pihole -f ./pihole/values.yml -n system-dns --create-namespace
 
 deploy_externalDNS:
-  helm install external-dns bitnami/external-dns -f ./externalDNS/values.yml -n system-dns --create-namespace
+  helm install external-dns external-dns/external-dns -n system-dns --create-namespace -f external-dns/external-dns-values.yaml
 
 deploy_redis:
   helm install home-lab-redis bitnami/redis -f ./redis/values.yaml -n home-lab --create-namespace
+
+deploy_nfs_subdir:
+  helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner --set nfs.server=192.168.1.25  --set nfs.path=/export/kubernetes --namespace kube-system
+
+deploy_openfaas:
+  helm install openfaas openfaas/openfaas \
+    --namespace openfaas \
+    -f openfaas/openfaas-values.yaml \
+    --create-namespace
+  kubectl apply -f ./openfaas/openfaas-ingress.yaml
+
+deploy_dashboard:
+  helm install my-headlamp headlamp/headlamp --namespace kube-system -f ./dashboard/values.yml
+
 
 # Test App
 deploy_test_app:

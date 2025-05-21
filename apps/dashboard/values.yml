@@ -1,0 +1,24 @@
+replicaCount: 1
+
+image:
+  tag: latest
+
+ingress:
+  enabled: true
+  hosts:
+  - host: headlamp.home
+    paths:
+      - path: /
+        type: Prefix
+
+clusterRoleBinding:
+  clusterRoleName: cluster-admin
+
+persistentVolumeClaim:
+  enabled: true
+  annotations:
+    {}
+  size: "1Gi"
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: "longhorn"

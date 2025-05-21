@@ -1,0 +1,25 @@
+replicas: 1
+persistence:
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
+  storageClassName: 'longhorn'
+
+
+ingress:
+  enabled: true
+  annotations: {}
+  path: /
+  hosts:
+    - grafana.home
+  tls: []
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus-server.monitoring.svc.cluster.local
+        isDefault: true

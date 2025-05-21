@@ -1,0 +1,7 @@
+192.168.1.183 longhorn.home
+192.168.1.183 grafana.home
+192.168.1.183 headlamp.home
+192.168.1.183 openfaas.home
+192.168.1.183 tekton.home
+192.168.1.183 traefik.home
+192.168.1.183 pihole.home

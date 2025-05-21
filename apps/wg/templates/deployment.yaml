@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "wg-easy.fullname" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "wg-easy.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "wg-easy.name" . }}
+    spec:
+      containers:
+        - name: wg-easy
+          image: ghcr.io/wg-easy/wg-easy
+          env:
+            - name: LANG
+              value: "en"
+            - name: WG_HOST
+              value: "{{ .Values.wgHost }}"
+            - name: WG_DEFAULT_DNS
+              value: "{{ .Values.wgDefaultDNS }}"
+            - name: WG_DEFAULT_ADDRESS
+              value: "{{ .Values.wgDefaultAddress }}"
+            - name: WG_ALLOWED_IPS
+              value: "{{ .Values.wgAllowedIps }}"
+            - name: UI_TRAFFIC_STATS
+              value: "true"
+          ports:
+            - containerPort: {{ .Values.service.ports.wireguardUDP }}
+              protocol: UDP
+            - containerPort: {{ .Values.service.ports.webUI }}
+              protocol: TCP
+          volumeMounts:
+            - name: wireguard-config
+              mountPath: /etc/wireguard
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN", "SYS_MODULE"]
+          sysctls:
+            - name: net.ipv4.ip_forward
+              value: "1"
+            - name: net.ipv4.conf.all.src_valid_mark
+              value: "1"
+      volumes:
+        - name: wireguard-config
+          persistentVolumeClaim:
+            claimName: {{ include "wg-easy.fullname" . }}-pvc
