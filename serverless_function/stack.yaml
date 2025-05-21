@@ -1,0 +1,26 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: https://openfaas.home
+functions:
+  hpe-lambda:
+    lang: python3-http
+    handler: ./hpe-lambda
+    image: velocipastor/hpe-lambda:latest
+    environment:
+    # TODO: use k8s secrets
+      ILO_HOST: 192.168.1.80
+      ILO_USERNAME: "api"
+      ILO_PASSWORD: "!bFg!o@wQR7@GapXrEIw"
+
+  network-controller:
+    lang: python3-http
+    handler: ./network-controller
+    image: velocipastor/network-controller:latest
+    environment:
+      KASA_SCAN: "enabled"
+    podSecurityContext:
+      capabilities:
+        add:
+          - NET_ADMIN
+
