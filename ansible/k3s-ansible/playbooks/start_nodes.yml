@@ -1,0 +1,22 @@
+---
+- name: Stop K3s cluster with external PostgreSQL
+  hosts: server
+  become: true
+  tasks:
+    - name: Start K3s service on all server nodes
+      ansible.builtin.systemd:
+        name: k3s
+        state: started
+
+    - name: Wait for server nodes to be ready
+      ansible.builtin.pause:
+        seconds: 30
+
+- name: Stop K3s cluster with external PostgreSQL
+  hosts: agent
+  become: true
+  tasks:
+    - name: Start K3s service on all agent nodes
+      ansible.builtin.systemd:
+        name: k3s-agent
+        state: started
